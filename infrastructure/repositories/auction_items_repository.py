@@ -9,7 +9,7 @@ class AuctionItemsRepository:
     def __init__(self, *args, **kwargs):
         self.items = []
 
-    def add(self, title, description, end_date=datetime.now()):  # TODO: datetime as dependency in composition_root
+    def add(self, title, description, starting_price, end_date=datetime.now()):  # TODO: datetime as dependency in composition_root
         id = uuid.uuid4().hex
         current_datetime = datetime.now()
         self.items.append((id, AuctionItem(id=id, title=title, description=description, current_price=Currency(10),

@@ -1,11 +1,9 @@
 import falcon
 import yaml
 from composition_root import FalconContainer
-from infrastructure.framework.falcon.controllers import InfoController
 
 
 def error_serializer(req, resp, exception):
-    representation = None
     preferred = req.client_prefers(('application/x-yaml',
                                     'application/json'))
     if preferred is not None:

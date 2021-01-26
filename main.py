@@ -15,4 +15,5 @@ application = None # required by gunicorn
 if framework == 'falcon':
     from infrastructure.framework.falcon.app import app as application
 elif framework == 'flask':
-    from infrastructure.framework.flask.app import app as application
+    from infrastructure.framework.flask.app import create_app
+    application = create_app()

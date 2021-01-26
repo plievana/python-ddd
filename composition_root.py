@@ -8,9 +8,12 @@ from application.query_handlers import GetItemsQueryHandler
 from application.services import IdentityHashingService
 from infrastructure.framework.falcon.controllers import (InfoController,
                                                          ItemsController)
+from infrastructure.framework.flask.controllers import (InfoController as FlaskInfoController,
+                                                        ItemsController as FlaskItemsController)
 from infrastructure.repositories.auction_items_repository import AuctionItemsRepository
 from infrastructure.repositories.users_repository import InMemoryUsersRepository
 from infrastructure.framework.falcon.authentication import BasicAuthenticationService
+from infrastructure.framework.flask.authentication import BasicAuthenticationService as FlaskBasicAuthenticationService
 
 
 class ObjectiveCommandHandler():
@@ -30,9 +33,14 @@ def functional_handler(logger):
 
 class BaseContainer(containers.DeclarativeContainer):
     hashing_service_factory = providers.Singleton(IdentityHashingService)
-    authentication_service_factory = providers.Factory(BasicAuthenticationService,
-        users_repository=providers.Factory(InMemoryUsersRepository, hashing_service=hashing_service_factory)
-    )
+    falcon_authentication_service_factory = providers.Factory(BasicAuthenticationService,
+                                                              users_repository=providers.Factory(InMemoryUsersRepository, hashing_service=hashing_service_factory)
+                                                              )
+    flask_authentication_service_factory = providers.Factory(FlaskBasicAuthenticationService,
+                                                             users_repository=providers.Factory(
+                                                                 InMemoryUsersRepository,
+                                                                 hashing_service=hashing_service_factory)
+                                                             )
 
 
 class CommandBusContainer(containers.DeclarativeContainer):
@@ -67,8 +75,19 @@ class FalconContainer(containers.DeclarativeContainer):
     items_controller_factory = providers.Factory(ItemsController,
                                                  command_bus=CommandBusContainer.command_bus_factory,
                                                  query_bus=QueryBusContainer.query_bus_factory,
-                                                 authentication_service=BaseContainer.authentication_service_factory,
+                                                 authentication_service=BaseContainer.falcon_authentication_service_factory,
                                                  )
     info_controller_factory = providers.Factory(InfoController,
-                                                authentication_service=BaseContainer.authentication_service_factory
+                                                authentication_service=BaseContainer.falcon_authentication_service_factory
                                                 )
+
+
+class FlaskContainer(containers.DeclarativeContainer):
+    info_controller_factory = providers.Factory(FlaskInfoController,
+                                                authentication_service=BaseContainer.flask_authentication_service_factory
+                                                )
+    items_controller_factory = providers.Factory(FlaskItemsController,
+                                                 command_bus=CommandBusContainer.command_bus_factory,
+                                                 query_bus=QueryBusContainer.query_bus_factory,
+                                                 authentication_service=BaseContainer.flask_authentication_service_factory,
+                                                 )

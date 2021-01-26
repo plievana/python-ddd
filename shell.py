@@ -1,9 +1,6 @@
-import readline # optional, will allow Up/Down/History in the console
 import code
-import application
-import domain
 from composition_root import CommandBusContainer
-from application.commands import *
+
 
 variables = globals().copy()
 variables.update({
